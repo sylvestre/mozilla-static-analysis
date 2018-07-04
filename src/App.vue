@@ -1,15 +1,14 @@
 <script>
+import Tasks from './Tasks.vue'
+
 export default {
   name: 'App',
-  mounted () {
-    this.$store.dispatch('load_index', 'mozreview')
-  },
-  data () {
-    return {}
+  components: {
+    Tasks
   },
   computed: {
-    tasks () {
-      return this.$store.state.tasks
+    channel () {
+      return this.$store.state.channel
     }
   }
 }
@@ -19,15 +18,10 @@ export default {
   <section class="section">
     <div class="container">
       <h1 class="title">
-        Static analysis demo
+        Static analysis demo <span class="tag is-warning">{{ channel }}</span>
       </h1>
 
-      <p v-for="task in tasks">
-        {{ task.taskId }}
-      </p>
+      <Tasks></Tasks>
     </div>
   </section>
 </template>
-
-<style module>
-</style>
