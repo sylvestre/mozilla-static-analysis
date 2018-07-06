@@ -21,7 +21,7 @@ export default {
         Static analysis demo <span class="tag is-warning">{{ channel }}</span>
       </h1>
 
-      <Tasks></Tasks>
+      <router-view></router-view>
     </div>
   </section>
 </template>

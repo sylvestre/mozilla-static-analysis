@@ -96,6 +96,7 @@ export default {
         </td>
         <td>
           <a class="button is-link" :href="task.data.url" target="_blank">Review</a>
+          <router-link :to="{ name: 'task', params: { taskId : task.taskId }}" class="button is-primary">Details</router-link>
         </td>
       </tr>
     </tbody>
