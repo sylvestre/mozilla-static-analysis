@@ -3,12 +3,14 @@ import Vuex from 'vuex'
 import axios from 'axios'
 Vue.use(Vuex)
 
-const TASKCLUSTER_INDEX = 'https://index.taskcluster.net/v1/'
+const TASKCLUSTER_INDEX = 'https://index.taskcluster.net/v1'
+const TASKCLUSTER_QUEUE = 'https://queue.taskcluster.net/v1'
 
 export default new Vuex.Store({
   state: {
     channel: 'testing',
-    tasks: []
+    tasks: [],
+    report: null
   },
   mutations: {
     use_tasks (state, tasks) {
@@ -21,6 +23,9 @@ export default new Vuex.Store({
       state.tasks.sort((x, y) => {
         return new Date(y.data.indexed) - new Date(x.data.indexed)
       })
+    },
+    use_report (state, report) {
+      state.report = report
     }
   },
   actions: {
@@ -29,6 +34,15 @@ export default new Vuex.Store({
       let url = TASKCLUSTER_INDEX + '/tasks/project.releng.services.project.' + this.state.channel + '.shipit_static_analysis.' + namespace
       axios.get(url).then(resp => {
         state.commit('use_tasks', resp.data.tasks)
+      })
+    },
+
+    // Load the report for a given task
+    load_report (state, taskId) {
+      let url = TASKCLUSTER_QUEUE + '/task/' + taskId + '/artifacts/public/results/report.json'
+      state.commit('use_report', null)
+      axios.get(url).then(resp => {
+        state.commit('use_report', resp.data)
       })
     }
   }

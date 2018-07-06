@@ -1,16 +1,131 @@
 <script>
+import Bool from './Bool.vue'
 export default {
   name: 'Task',
   components: {
+    Bool
+  },
+  mounted () {
+    this.$store.dispatch('load_report', this.$route.params.taskId)
   },
   computed: {
+    report () {
+      return this.$store.state.report
+    },
+    nb_publishable () {
+      if (!this.report || !this.report.issues) {
+        return 0
+      }
+      return this.report.issues.filter(i => i.publishable).length
+    }
   }
 }
 </script>
 
 <template>
   <div>
-    <h1>Task {{ $route.params.taskId }}</h1>
-    <router-link to="/" class="button is-link">Back to tasks</router-link>
+    <h1 class="title">Task <a :href="'https://tools.taskcluster.net/task-inspector/#' + $route.params.taskId" target="_blank">{{ $route.params.taskId }}</a></h1>
+
+    <nav class="level" v-if="report">
+      <div class="level-item has-text-centered">
+        <div>
+          <p class="heading">Issues</p>
+          <p class="title">{{ report.issues.length }}</p>
+        </div>
+      </div>
+      <div class="level-item has-text-centered">
+        <div>
+          <p class="heading">Publishable</p>
+          <p class="title">{{ nb_publishable }}</p>
+        </div>
+      </div>
+      <div class="level-item has-text-centered">
+        <div>
+          <p class="heading">Source</p>
+          <p class="title"><a :href="report.revision.url" target="_blank">{{ report.revision.source }}</a></p>
+        </div>
+      </div>
+      <div class="level-item has-text-centered">
+        <div>
+          <p class="heading">Reported</p>
+          <p class="title">{{ report.time }}</p>
+        </div>
+      </div>
+    </nav>
+
+    <table class="table" v-if="report && report.issues">
+      <thead>
+        <tr>
+          <td>Analyzer</td>
+          <td>Path</td>
+          <td>Lines</td>
+          <td>Publication</td>
+          <td>Check</td>
+          <td>Level</td>
+          <td>Message</td>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr v-for="issue in report.issues" :class="{'publishable': issue.publishable}">
+          <td>
+            <span v-if="issue.analyzer == 'mozlint'">{{ issue.linter }}<br />by Mozlint</span>
+            <span v-else>{{ issue.analyzer }}</span>
+          </td>
+          <td class="path">{{ issue.path }}</td>
+          <td>{{ issue.line }} <span v-if="issue.nb_lines > 1">&rarr; {{ issue.line - 1 + issue.nb_lines }}</span></td>
+          <td>
+            <Bool :value="issue.publishable" name="Publishable" />
+            <ul>
+              <li><Bool :value="issue.in_patch" name="In patch" /></li>
+              <li><Bool :value="issue.validates" name="Validated" /></li>
+              <li><Bool :value="issue.publishable" name="New issue" /></li>
+            </ul>
+          </td>
+
+          <td>
+            <span v-if="issue.analyzer == 'mozlint'">{{ issue.rule }}</span>
+            <span v-if="issue.analyzer == 'clang-tidy'">{{ issue.check }}</span>
+          </td>
+          <td>
+            <span v-if="issue.level == 'error' || issue.type == 'error'" class="tag is-danger">Error</span>
+            <span v-if="issue.level == 'warning' || issue.type == 'warning'" class="tag is-warning">Warning</span>
+          </td>
+          <td>
+            {{ issue.message }}
+            <pre v-if="issue.body">
+              {{ issue.body }}
+            </pre>
+
+            <div v-if="issue.analyzer == 'clang-format' && issue.mode == 'replace'">
+              <strong>Replace</strong>
+              <pre>{{ issue.old_lines }}</pre>
+              <strong>by these:</strong>
+              <pre>{{ issue.new_lines }}</pre>
+            </div>
+            <div v-if="issue.analyzer == 'clang-format' && issue.mode == 'insert'">
+              <strong>Insert these lines</strong>
+              <pre>{{ issue.new_lines }}</pre>
+            </div>
+            <div v-if="issue.analyzer == 'clang-format' && issue.mode == 'delete'">
+              <strong>Delete these lines</strong>
+              <pre>{{ issue.old_lines }}</pre>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="notification is-info" v-else>No issues !</p>
   </div>
 </template>
+
+<style scoped>
+tr.publishable {
+  background: #e6ffcc;
+}
+
+td.path {
+  color: #4d4d4d;
+  font-family: monospace;
+}
+</style>
