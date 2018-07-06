@@ -16,14 +16,14 @@ export default {
   filters: {
     // Display time since elapsed in a human format
     since (datetime) {
-      var dspStep = (t, name) => (Math.round(t) + ' ' + name + (t > 1 ? 's' : ''))
+      var dspStep = (t, name) => (Math.round(t) + ' ' + name + (Math.round(t) > 1 ? 's' : ''))
 
       let diff = (new Date() - new Date(datetime)) / 1000
       let steps = [
         [60, 'second'],
         [60, 'minute'],
         [24, 'hour'],
-        [30, 'month']
+        [30, 'day']
       ]
       var prev = ''
       for (let [t, name] of steps) {
@@ -46,6 +46,8 @@ export default {
       <tr>
         <td>#</td>
         <td>Revision</td>
+        <td>State</td>
+        <td>Nb. Issues</td>
         <td>Indexed</td>
         <td>Actions</td>
       </tr>
@@ -73,6 +75,20 @@ export default {
         </td>
         <td v-else>
           <p class="notification is-danger">Unknown data source: {{ task.data.source }}</p>
+        </td>
+
+        <td>
+          <span class="tag is-light" v-if="task.data.state == 'started'">Started</span>
+          <span class="tag is-info" v-else-if="task.data.state == 'cloned'">Cloned</span>
+          <span class="tag is-info" v-else-if="task.data.state == 'analyzing'">Analyzing</span>
+          <span class="tag is-primary" v-else-if="task.data.state == 'analyzed'">Analyzed</span>
+          <span class="tag is-danger" v-else-if="task.data.state == 'error'">Error</span>
+          <span class="tag is-success" v-else-if="task.data.state == 'done'">Done</span>
+          <span class="tag is-black" v-else>Unknown</span>
+        </td>
+
+        <td>
+          {{ task.data.issues }}
         </td>
 
         <td>
