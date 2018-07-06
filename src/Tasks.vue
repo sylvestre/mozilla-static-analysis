@@ -41,7 +41,7 @@ export default {
 </script>
 
 <template>
-  <table class="table">
+  <table class="table is-fullwidth">
     <thead>
       <tr>
         <td>#</td>

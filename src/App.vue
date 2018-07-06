@@ -17,17 +17,19 @@ export default {
 <template>
   <main>
     <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
-      <div class="navbar-brand">
-        <span>Static analysis demo</span>
-        <span class="tag is-warning">{{ channel }}</span>
-      </div>
-      <div class="navbar-end">
-        <div class="navbar-item">
-          <router-link to="/" class="button is-link" v-if="$route.name != 'tasks'">All tasks</router-link>
+      <div class="container is-fluid">
+        <div class="navbar-brand">
+          <span>Static analysis demo</span>
+          <span class="tag is-warning">{{ channel }}</span>
+        </div>
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <router-link to="/" class="button is-link" v-if="$route.name != 'tasks'">All tasks</router-link>
+          </div>
         </div>
       </div>
     </nav>
-    <div class="container is-fullhd">
+    <div class="container is-fluid">
       <router-view></router-view>
     </div>
   </main>

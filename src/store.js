@@ -41,7 +41,7 @@ export default new Vuex.Store({
     load_report (state, taskId) {
       let url = TASKCLUSTER_QUEUE + '/task/' + taskId + '/artifacts/public/results/report.json'
       state.commit('use_report', null)
-      axios.get(url).then(resp => {
+      return axios.get(url).then(resp => {
         state.commit('use_report', resp.data)
       })
     }
