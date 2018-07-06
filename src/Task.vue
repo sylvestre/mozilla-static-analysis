@@ -31,6 +31,11 @@ export default {
       }
       return this.report.issues.filter(i => i.publishable).length
     }
+  },
+  filters: {
+    from_timestamp (value) {
+      return new Date(value * 1000).toUTCString()
+    }
   }
 }
 </script>
@@ -66,7 +71,7 @@ export default {
         <div class="level-item has-text-centered">
           <div>
             <p class="heading">Reported</p>
-            <p class="title">{{ report.time }}</p>
+            <p class="title">{{ report.time|from_timestamp }}</p>
           </div>
         </div>
       </nav>
