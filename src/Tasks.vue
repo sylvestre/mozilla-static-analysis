@@ -2,8 +2,7 @@
 export default {
   name: 'App',
   mounted () {
-    this.$store.dispatch('load_index', 'mozreview')
-    this.$store.dispatch('load_index', 'phabricator')
+    this.$store.dispatch('load_all_indexes')
   },
   data () {
     return {}

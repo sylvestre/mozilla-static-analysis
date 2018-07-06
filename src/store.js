@@ -13,6 +13,9 @@ export default new Vuex.Store({
     report: null
   },
   mutations: {
+    reset_tasks (state, tasks) {
+      state.tasks = []
+    },
     use_tasks (state, tasks) {
       // Filter tasks without extra data
       state.tasks = state.tasks.concat(
@@ -29,6 +32,12 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    load_all_indexes (state) {
+      state.commit('reset_tasks')
+      state.dispatch('load_index', 'mozreview')
+      state.dispatch('load_index', 'phabricator')
+    },
+
     // Load indexed tasks summary from Taskcluster
     load_index (state, namespace) {
       let url = TASKCLUSTER_INDEX + '/tasks/project.releng.services.project.' + this.state.channel + '.shipit_static_analysis.' + namespace
