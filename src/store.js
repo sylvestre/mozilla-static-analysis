@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
+import router from './routes'
 Vue.use(Vuex)
 
 const TASKCLUSTER_INDEX = 'https://index.taskcluster.net/v1'
@@ -13,6 +14,9 @@ export default new Vuex.Store({
     report: null
   },
   mutations: {
+    use_channel (state, channel) {
+      state.channel = channel
+    },
     reset_tasks (state, tasks) {
       state.tasks = []
     },
@@ -32,6 +36,14 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    // Switch data channel to use
+    switch_channel (state, channel) {
+      state.commit('use_channel', channel)
+      state.dispatch('load_all_indexes')
+      router.push({ name: 'tasks' })
+    },
+
+    // Load all indexes available
     load_all_indexes (state) {
       state.commit('reset_tasks')
       state.dispatch('load_index', 'mozreview')
