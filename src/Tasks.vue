@@ -86,8 +86,12 @@ export default {
           <span class="tag is-black" v-else>Unknown</span>
         </td>
 
-        <td>
-          {{ task.data.issues }}
+        <td :class="{'has-text-success': task.data.issues_publishable > 0}">
+
+          <span v-if="task.data.issues_publishable > 0">{{ task.data.issues_publishable }}</span>
+          <span v-else-if="task.data.issues_publishable == 0">{{ task.data.issues_publishable }}</span>
+          <span v-else>-</span>
+          / {{ task.data.issues }}
         </td>
 
         <td>

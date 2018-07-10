@@ -52,14 +52,14 @@ export default {
       <nav class="level" v-if="report">
         <div class="level-item has-text-centered">
           <div>
-            <p class="heading">Issues</p>
-            <p class="title">{{ report.issues.length }}</p>
+            <p class="heading">Publishable</p>
+            <p class="title">{{ nb_publishable }}</p>
           </div>
         </div>
         <div class="level-item has-text-centered">
           <div>
-            <p class="heading">Publishable</p>
-            <p class="title">{{ nb_publishable }}</p>
+            <p class="heading">Issues</p>
+            <p class="title">{{ report.issues.length }}</p>
           </div>
         </div>
         <div class="level-item has-text-centered">
