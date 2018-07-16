@@ -6,19 +6,34 @@ Vue.use(Vuex)
 
 const TASKCLUSTER_INDEX = 'https://index.taskcluster.net/v1'
 const TASKCLUSTER_QUEUE = 'https://queue.taskcluster.net/v1'
+const TASKS_SLICE = 10
 
 export default new Vuex.Store({
   state: {
     channel: 'testing',
     tasks: [],
-    report: null
+    report: null,
+    stats: null
   },
   mutations: {
     use_channel (state, channel) {
       state.channel = channel
     },
-    reset_tasks (state, tasks) {
+    reset_tasks (state) {
       state.tasks = []
+    },
+    reset_stats (state) {
+      // List all active tasks Ids
+      var ids =
+        state.tasks
+          .filter((task) => task.data.state === 'done' && task.data.issues > 0)
+          .map(t => t.taskId)
+
+      state.stats = {
+        loaded: 0,
+        ids: ids,
+        checks: {}
+      }
     },
     use_tasks (state, tasks) {
       // Filter tasks without extra data
@@ -33,6 +48,29 @@ export default new Vuex.Store({
     },
     use_report (state, report) {
       state.report = report
+
+      // Calc stats for this report
+      // clang-format does not provide any check information
+      if (report !== null && state.stats !== null) {
+        var checks = report.issues.filter(i => i.analyzer !== 'clang-format')
+        state.stats.checks = checks.reduce((stats, issue) => {
+          var analyzer = issue.analyzer + (issue.analyzer === 'mozlint' ? '.' + issue.linter : '')
+          var check = issue.analyzer === 'clang-tidy' ? issue.check : issue.rule
+          var key = analyzer + '.' + check
+          if (stats[key] === undefined) {
+            stats[key] = {
+              analyzer: analyzer,
+              check: check,
+              publishable: 0,
+              total: 0
+            }
+          }
+          stats[key].publishable += issue.publishable ? 1 : 0
+          stats[key].total++
+          return stats
+        }, state.stats.checks)
+        state.stats.loaded += 1
+      }
     }
   },
   actions: {
@@ -46,14 +84,17 @@ export default new Vuex.Store({
     // Load all indexes available
     load_all_indexes (state) {
       state.commit('reset_tasks')
-      state.dispatch('load_index', 'mozreview')
-      state.dispatch('load_index', 'phabricator')
+
+      return Promise.all([
+        state.dispatch('load_index', 'mozreview'),
+        state.dispatch('load_index', 'phabricator')
+      ])
     },
 
     // Load indexed tasks summary from Taskcluster
     load_index (state, namespace) {
       let url = TASKCLUSTER_INDEX + '/tasks/project.releng.services.project.' + this.state.channel + '.shipit_static_analysis.' + namespace
-      axios.get(url).then(resp => {
+      return axios.get(url).then(resp => {
         state.commit('use_tasks', resp.data.tasks)
       })
     },
@@ -65,6 +106,30 @@ export default new Vuex.Store({
       return axios.get(url).then(resp => {
         state.commit('use_report', resp.data)
       })
+    },
+
+    // Load multiple reports for stats crunching
+    calc_stats (state, tasksId) {
+      // Load all indexes to get task ids
+      var indexes = state.dispatch('load_all_indexes')
+      indexes.then(() => {
+        console.log('Start analysis')
+        state.commit('reset_stats')
+
+        // Start processing by batches
+        state.dispatch('load_report_batch', 0)
+      })
+    },
+    load_report_batch (state, step) {
+      if (step * TASKS_SLICE > state.state.stats.ids.length) {
+        return
+      }
+
+      // Slice full loading in smaller batches to avoid using too many ressources
+      var slice = state.state.stats.ids.slice(step * TASKS_SLICE, (step + 1) * TASKS_SLICE)
+      var batch = Promise.all(slice.map(taskId => state.dispatch('load_report', taskId)))
+      batch.then(resp => console.info('Loaded batch', step))
+      batch.then(resp => state.dispatch('load_report_batch', step + 1))
     }
   }
 })

@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Tasks from './Tasks.vue'
 import Task from './Task.vue'
+import Stats from './Stats.vue'
 
 Vue.use(VueRouter)
 
@@ -16,6 +17,11 @@ export default new VueRouter({
       path: '/task/:taskId',
       name: 'task',
       component: Task
+    },
+    {
+      path: '/stats',
+      name: 'stats',
+      component: Stats
     }
   ]
 })
