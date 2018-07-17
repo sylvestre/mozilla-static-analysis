@@ -72,7 +72,10 @@ export default {
         <tbody>
           <tr v-for="check in checks" :class="{'publishable': check.publishable > 0}">
             <td>{{ check.analyzer }}</td>
-            <td>{{ check.check }}</td>
+            <td>
+              {{ check.check }}
+              <span class="has-text-grey" v-if="check.analyzer == 'mozlint.flake8'">{{ check.message }}</span>
+            </td>
             <td>{{ check.total }}</td>
             <td>{{ check.publishable }}</td>
           </tr>

@@ -60,6 +60,7 @@ export default new Vuex.Store({
           if (stats[key] === undefined) {
             stats[key] = {
               analyzer: analyzer,
+              message: issue.message,
               check: check,
               publishable: 0,
               total: 0
