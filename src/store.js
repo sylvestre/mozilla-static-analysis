@@ -18,6 +18,8 @@ export default new Vuex.Store({
   mutations: {
     use_channel (state, channel) {
       state.channel = channel
+      state.stats = null
+      state.report = null
     },
     reset_tasks (state) {
       state.tasks = []
@@ -49,9 +51,9 @@ export default new Vuex.Store({
     use_report (state, report) {
       state.report = report
 
-      // Calc stats for this report
-      // clang-format does not provide any check information
       if (report !== null && state.stats !== null) {
+        // Calc stats for this report
+        // clang-format does not provide any check information
         var checks = report.issues.filter(i => i.analyzer !== 'clang-format')
         state.stats.checks = checks.reduce((stats, issue) => {
           var analyzer = issue.analyzer + (issue.analyzer === 'mozlint' ? '.' + issue.linter : '')
@@ -60,16 +62,30 @@ export default new Vuex.Store({
           if (stats[key] === undefined) {
             stats[key] = {
               analyzer: analyzer,
+              key: key,
               message: issue.message,
               check: check,
               publishable: 0,
+              issues: [],
               total: 0
             }
           }
           stats[key].publishable += issue.publishable ? 1 : 0
           stats[key].total++
+
+          // Save publishable issues for Check component
+          // and link report data to the issue
+          if (issue.publishable) {
+            let extras = {
+              revision: report.revision,
+              taskId: report.taskId
+            }
+            stats[key].issues.push(Object.assign(extras, issue))
+          }
           return stats
         }, state.stats.checks)
+
+        // Mark new report loaded
         state.stats.loaded += 1
       }
     }
@@ -105,12 +121,17 @@ export default new Vuex.Store({
       let url = TASKCLUSTER_QUEUE + '/task/' + taskId + '/artifacts/public/results/report.json'
       state.commit('use_report', null)
       return axios.get(url).then(resp => {
-        state.commit('use_report', resp.data)
+        state.commit('use_report', Object.assign({ taskId }, resp.data))
       })
     },
 
     // Load multiple reports for stats crunching
     calc_stats (state, tasksId) {
+      // Avoid multiple loads
+      if (state.state.stats !== null) {
+        return
+      }
+
       // Load all indexes to get task ids
       var indexes = state.dispatch('load_all_indexes')
       indexes.then(() => {

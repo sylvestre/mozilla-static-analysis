@@ -1,23 +1,16 @@
 <script>
+import mixins from './mixins.js'
+
 export default {
-  mounted () {
-    this.$store.dispatch('calc_stats')
-  },
+  mixins: [
+    mixins.stats
+  ],
   data () {
     return {
       sort: 'detected'
     }
   },
   computed: {
-    stats () {
-      return this.$store.state.stats
-    },
-    progress () {
-      if (!this.stats || !this.stats.ids) {
-        return null
-      }
-      return 100 * this.stats.loaded / this.stats.ids.length
-    },
     checks () {
       if (!this.stats || !this.stats.loaded) {
         return null
@@ -77,7 +70,10 @@ export default {
               <span class="has-text-grey" v-if="check.analyzer == 'mozlint.flake8'">{{ check.message }}</span>
             </td>
             <td>{{ check.total }}</td>
-            <td>{{ check.publishable }}</td>
+            <td>
+              <router-link v-if="check.publishable > 0" :to="{ name: 'check', params: { check: check.key }}">{{ check.publishable }}</router-link>
+              <span class="has-text-grey" v-else>0</span>
+            </td>
           </tr>
         </tbody>
       </table>

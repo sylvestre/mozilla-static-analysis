@@ -45,9 +45,11 @@ export default {
           </div>
 
           <div class="navbar-end">
-            <div class="navbar-item">
-              <router-link to="/stats" class="button is-link" v-if="$route.name != 'stats'">Stats</router-link>
-              <router-link to="/" class="button is-link" v-if="$route.name != 'tasks'">All tasks</router-link>
+            <div class="navbar-item" v-if="$route.name != 'stats'">
+              <router-link to="/stats" class="button is-link">All checks</router-link>
+            </div>
+            <div class="navbar-item" v-if="$route.name != 'tasks'">
+              <router-link to="/" class="button is-link">All tasks</router-link>
             </div>
           </div>
         </div>
