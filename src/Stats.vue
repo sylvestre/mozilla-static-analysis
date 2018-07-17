@@ -3,6 +3,11 @@ export default {
   mounted () {
     this.$store.dispatch('calc_stats')
   },
+  data () {
+    return {
+      sort: 'detected'
+    }
+  },
   computed: {
     stats () {
       return this.$store.state.stats
@@ -17,11 +22,23 @@ export default {
       if (!this.stats || !this.stats.loaded) {
         return null
       }
+      let sortStr = (x, y) => x.toLowerCase().localeCompare(y.toLowerCase())
+      var sorts = {
+        'analyzer': (x, y) => sortStr(x.analyzer, y.analyzer) || sortStr(x.check, y.check),
+        'check': (x, y) => sortStr(x.check, y.check),
+        'detected': (x, y) => y.total - x.total,
+        'published': (x, y) => y.publishable - x.publishable
+      }
 
       // Apply local sort to the checks from store
       var checks = Object.values(this.stats.checks)
-      checks.sort((x, y) => y.total - x.total)
+      checks.sort(sorts[this.sort])
       return checks
+    }
+  },
+  methods: {
+    select_sort (name) {
+      this.$set(this, 'sort', name)
     }
   }
 }
@@ -38,10 +55,18 @@ export default {
       <table class="table is-fullwidth" v-if="checks">
         <thead>
           <tr>
-            <th>Analyzer</th>
-            <th>Check</th>
-            <th>Detected</th>
-            <th>Published</th>
+            <th>
+              <span class="button" v-on:click="select_sort('analyzer')" :class="{'is-focused': sort == 'analyzer' }">Analyzer</span>
+            </th>
+            <th>
+              <span class="button" v-on:click="select_sort('check')" :class="{'is-focused': sort == 'check' }">Check</span>
+            </th>
+            <th>
+              <span class="button" v-on:click="select_sort('detected')" :class="{'is-focused': sort == 'detected' }">Detected</span>
+            </th>
+            <th>
+              <span class="button" v-on:click="select_sort('published')" :class="{'is-focused': sort == 'published' }">Published</span>
+            </th>
           </tr>
         </thead>
         <tbody>
