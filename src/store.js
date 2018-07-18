@@ -34,7 +34,8 @@ export default new Vuex.Store({
       state.stats = {
         loaded: 0,
         ids: ids,
-        checks: {}
+        checks: {},
+        start_date: new Date()
       }
     },
     use_tasks (state, tasks) {
@@ -84,6 +85,9 @@ export default new Vuex.Store({
           }
           return stats
         }, state.stats.checks)
+
+        // Save start date
+        state.stats.start_date = new Date(Math.min(new Date(report.time * 1000.0), state.stats.start_date))
 
         // Mark new report loaded
         state.stats.loaded += 1

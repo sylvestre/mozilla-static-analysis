@@ -3,7 +3,8 @@ import mixins from './mixins.js'
 
 export default {
   mixins: [
-    mixins.stats
+    mixins.stats,
+    mixins.date
   ],
   data () {
     return {
@@ -40,7 +41,10 @@ export default {
 <template>
   <div>
     <h1 class="title">Statistics</h1>
-    <h2 class="subtitle" v-if="stats && stats.ids">Loaded {{ stats.loaded }}/{{ stats.ids.length }} tasks</h2>
+    <h2 class="subtitle" v-if="stats && stats.ids">
+      <span>Loaded {{ stats.loaded }}/{{ stats.ids.length }} tasks</span>
+      <span v-if="stats && stats.start_date" :title="stats.start_date">, since {{ stats.start_date|since }} ago</span>
+    </h2>
 
     <div v-if="stats">
       <progress class="progress is-info" :class="{'is-info': progress < 100, 'is-success': progress >= 100}" :value="progress" max="100">{{ progress }}%</progress>
